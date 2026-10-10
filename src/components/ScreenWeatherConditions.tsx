@@ -1,23 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CuteMascot } from './CuteMascot';
 import { WeatherData } from '../types';
 import { AppStore } from '../services/store';
+import { WeatherService } from '../services/weatherService';
 import { 
   Sun, 
   Cloud, 
   CloudRain, 
   Wind,
   Droplets, 
-  Leaf,
+  Leaf, 
   Sparkles, 
   ChevronRight, 
-  Home as HomeIcon,
+  Home as HomeIcon, 
   Plus, 
   BarChart2, 
   CloudSun, 
-  Brain,
-  Thermometer,
-  ArrowLeft
+  Brain, 
+  Thermometer, 
+  ArrowLeft,
+  Flame,
+  ShieldAlert,
+  Zap,
+  Activity
 } from 'lucide-react';
 
 interface ScreenWeatherConditionsProps {
@@ -37,6 +42,20 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
 }) => {
   const feedbackList = AppStore.getFeedbackRecords();
 
+  // Interactive Heat Simulator state
+  const [simulatedTemp, setSimulatedTemp] = useState<number>(weather.temp);
+  const [simulatedHum, setSimulatedHum] = useState<number>(weather.humidity);
+
+  // Compute behavioral changes under heat conditions
+  const heatImpact = WeatherService.calculateHeatBehavioralImpact(simulatedTemp, simulatedHum);
+
+  const heatPresets = [
+    { label: '22°C Ideal', temp: 22, hum: 45, tag: 'Comfort' },
+    { label: '29°C Warm', temp: 29, hum: 55, tag: 'Moderate' },
+    { label: '34°C Hot', temp: 34, hum: 65, tag: 'Heat Stress' },
+    { label: '39°C Extreme', temp: 39, hum: 75, tag: 'Severe Wave' },
+  ];
+
   return (
     <div className="relative min-h-screen flex flex-col justify-between bg-gradient-to-b from-[#E0F2FE] via-[#F8FAFC] to-[#F1F5F9] text-slate-800 pb-24 select-none">
       <div className="px-5 pt-4">
@@ -53,14 +72,146 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
 
           <div className="text-center">
             <h2 className="text-base font-extrabold text-slate-800 font-heading">
-              Weather Conditions Impact
+              Weather &amp; Heat Conditions
             </h2>
             <div className="text-[10px] text-slate-400 font-medium">
-              Part 2: Weather factors &amp; mood correlation
+              Behavioral Changes &amp; Heat Stress Analysis
             </div>
           </div>
 
           <CuteMascot size="sm" className="w-8 h-7" />
+        </div>
+
+        {/* HIGHLIGHT: Prediction of Human Behavioral Changes Under Heat Conditions */}
+        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 text-white rounded-3xl p-4 shadow-lg relative overflow-hidden mb-4">
+          <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
+          
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white">
+                <Flame className="w-4 h-4 text-amber-200 fill-amber-200" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black tracking-wide uppercase text-amber-100">
+                  Heat Stress Behavioral Prediction
+                </h3>
+                <div className="text-[11px] font-medium text-white/90">
+                  Predicting human irritability &amp; cognitive fatigue under heat
+                </div>
+              </div>
+            </div>
+
+            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-black/20 border border-white/20 text-white">
+              {heatImpact.stressCategory}
+            </span>
+          </div>
+
+          {/* Interactive Heat Preset Switcher */}
+          <div className="mt-2.5 pt-2.5 border-t border-white/20">
+            <div className="text-[10px] font-bold text-amber-100 mb-1.5 flex items-center justify-between">
+              <span>Test Thermal Scenarios:</span>
+              <span>Heat Index: {heatImpact.heatIndex}°C</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {heatPresets.map((preset) => {
+                const isActive = simulatedTemp === preset.temp;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      setSimulatedTemp(preset.temp);
+                      setSimulatedHum(preset.hum);
+                    }}
+                    className={`py-1.5 px-1 rounded-xl text-center text-[10px] font-bold transition-all ${
+                      isActive 
+                        ? 'bg-white text-orange-700 shadow-sm scale-[1.02]' 
+                        : 'bg-white/15 text-white hover:bg-white/25'
+                    }`}
+                  >
+                    <div>{preset.label}</div>
+                    <div className="text-[8px] opacity-80">{preset.tag}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Behavioral Output Breakdown */}
+          <div className="mt-3 bg-black/20 backdrop-blur-xs rounded-2xl p-3 space-y-2 border border-white/10">
+            <div className="text-[11px] font-semibold text-white leading-snug">
+              {heatImpact.primaryBehavior}
+            </div>
+
+            {/* Behavioral Probability Indicators */}
+            <div className="space-y-1.5 pt-1">
+              {/* Irritability Risk */}
+              <div>
+                <div className="flex justify-between text-[10px] font-bold text-amber-100 mb-0.5">
+                  <span className="flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-amber-300" />
+                    Irritability &amp; Impatience
+                  </span>
+                  <span>{heatImpact.irritabilityRisk}% Risk</span>
+                </div>
+                <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-amber-300 to-rose-400 rounded-full transition-all duration-500" 
+                    style={{ width: `${heatImpact.irritabilityRisk}%` }} 
+                  />
+                </div>
+              </div>
+
+              {/* Cognitive Fatigue */}
+              <div>
+                <div className="flex justify-between text-[10px] font-bold text-amber-100 mb-0.5">
+                  <span className="flex items-center gap-1">
+                    <Activity className="w-3 h-3 text-sky-200" />
+                    Cognitive Fatigue &amp; Brain Fog
+                  </span>
+                  <span>{heatImpact.cognitiveFatigueRisk}% Risk</span>
+                </div>
+                <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-sky-300 to-indigo-300 rounded-full transition-all duration-500" 
+                    style={{ width: `${heatImpact.cognitiveFatigueRisk}%` }} 
+                  />
+                </div>
+              </div>
+
+              {/* Calm Reserve */}
+              <div>
+                <div className="flex justify-between text-[10px] font-bold text-amber-100 mb-0.5">
+                  <span className="flex items-center gap-1">
+                    <Brain className="w-3 h-3 text-emerald-300" />
+                    Patience &amp; Calm Reserve
+                  </span>
+                  <span>{heatImpact.calmProbability}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-300 to-teal-200 rounded-full transition-all duration-500" 
+                    style={{ width: `${heatImpact.calmProbability}%` }} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Physiological & Neuro Mechanisms */}
+            <div className="pt-2 border-t border-white/10 text-[9px] text-white/90">
+              <div className="font-bold text-amber-200 mb-1">Underlying Neurobiological Drivers:</div>
+              <ul className="list-disc pl-3 space-y-0.5 text-white/80">
+                {heatImpact.physiologicalDrivers.map((driver, idx) => (
+                  <li key={idx}>{driver}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Behavioral Mitigation Tip */}
+            <div className="pt-1.5 text-[9px] text-amber-100 font-medium">
+              💡 <strong>Action Tip:</strong> {heatImpact.mitigationTip}
+            </div>
+          </div>
         </div>
 
         {/* Section 1: Mood Percentages Under Specific Weather Conditions */}
@@ -122,7 +273,7 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
               </div>
             </div>
 
-            {/* High Wind */}
+            {/* High Wind & Storms */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
@@ -151,21 +302,21 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
           </div>
 
           <div className="bg-white border border-slate-200/80 rounded-3xl p-4 space-y-3 shadow-2xs">
-            {/* Factor 1: Temperature */}
+            {/* Factor 1: Temperature & Heat */}
             <div>
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-semibold text-slate-700 flex items-center gap-1">
                   <Thermometer className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Temperature (22°C–28°C sweet spot)</span>
+                  <span>Temperature (Sweet spot 22°C–28°C)</span>
                 </span>
-                <span className="font-bold text-[#F59E0B]">+38% Happy</span>
+                <span className="font-bold text-[#F59E0B]">+38% Happy / Calm</span>
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full w-[78%]" />
               </div>
             </div>
 
-            {/* Factor 2: High Humidity */}
+            {/* Factor 2: High Humidity & Heat Mugginess */}
             <div>
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-semibold text-slate-700 flex items-center gap-1">
@@ -256,12 +407,11 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
           <span>Mood</span>
         </button>
 
-        {/* Floating Center '+' Button */}
+        {/* Log Mood Floating Action Button */}
         <button
           type="button"
           onClick={onOpenLogMood}
-          className="-mt-7 w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg flex items-center justify-center transform active:scale-95 transition-transform"
-          title="Log Your Mood"
+          className="-mt-5 w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-indigo-500/25 transition-all transform active:scale-95 focus:outline-none"
         >
           <Plus className="w-6 h-6 stroke-[2.5]" />
         </button>
@@ -271,11 +421,11 @@ export const ScreenWeatherConditions: React.FC<ScreenWeatherConditionsProps> = (
           type="button"
           className="flex flex-col items-center text-indigo-600 font-bold text-[10px] gap-0.5 focus:outline-none"
         >
-          <CloudSun className="w-5 h-5 stroke-[2.2]" />
+          <CloudSun className="w-5 h-5 stroke-[2.5]" />
           <span>Weather</span>
         </button>
 
-        {/* ML Prediction */}
+        {/* Prediction */}
         <button
           type="button"
           onClick={onOpenPrediction}

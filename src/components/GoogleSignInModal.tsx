@@ -12,11 +12,11 @@ interface GoogleSignInModalProps {
 export const GoogleSignInModal: React.FC<GoogleSignInModalProps> = ({
   onSuccess,
   onClose,
-  defaultEmail = 'navyateja.bandi@gmail.com',
+  defaultEmail = '',
 }) => {
-  const [googleEmail, setGoogleEmail] = useState(defaultEmail);
+  const [googleEmail, setGoogleEmail] = useState('');
   const [googlePassword, setGooglePassword] = useState('');
-  const [googleName, setGoogleName] = useState('Navya Teja');
+  const [googleName, setGoogleName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);

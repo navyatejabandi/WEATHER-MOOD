@@ -334,4 +334,103 @@ export class WeatherService {
       );
     });
   }
+
+  /**
+   * Predict Human Behavioral Changes Under Heat Conditions
+   * Models the physiological & neurobehavioral impact of thermal stress, heat index, and mugginess.
+   */
+  static calculateHeatBehavioralImpact(temp: number, humidity: number): {
+    heatIndex: number;
+    stressCategory: 'Comfortable' | 'Caution' | 'Extreme Caution' | 'Danger' | 'Severe Danger';
+    irritabilityRisk: number;
+    cognitiveFatigueRisk: number;
+    calmProbability: number;
+    primaryBehavior: string;
+    physiologicalDrivers: string[];
+    mitigationTip: string;
+  } {
+    // Simplified Rothfusz approximation for Heat Index
+    const T = (temp * 9) / 5 + 32; // convert to Fahrenheit
+    const R = humidity;
+    let HI_F = 0.5 * (T + 61.0 + (T - 68.0) * 1.2 + R * 0.094);
+
+    if (HI_F >= 80) {
+      HI_F =
+        -42.379 +
+        2.04901523 * T +
+        10.14333127 * R -
+        0.22475541 * T * R -
+        0.00683783 * T * T -
+        0.05481717 * R * R +
+        0.00122874 * T * T * R +
+        0.00085282 * T * R * R -
+        0.00000199 * T * T * R * R;
+    }
+
+    const heatIndexC = Math.round(((HI_F - 32) * 5) / 9);
+
+    if (temp >= 38 || heatIndexC >= 42) {
+      return {
+        heatIndex: heatIndexC,
+        stressCategory: 'Severe Danger',
+        irritabilityRisk: 72,
+        cognitiveFatigueRisk: 84,
+        calmProbability: 8,
+        primaryBehavior: 'High Agitation & Lethargy: Impaired cognitive processing, acute impatience, and social withdrawal.',
+        physiologicalDrivers: [
+          'High cortisol & adrenaline output triggered by hyperthermic strain',
+          'Severe sleep disruption from elevated core nighttime temperatures',
+          'Vasodilation reducing blood flow efficiency to prefrontal cortex'
+        ],
+        mitigationTip: 'Seek conditioned air, aggressive hydration, and postpone complex mental negotiations.'
+      };
+    }
+
+    if (temp >= 33 || heatIndexC >= 36) {
+      return {
+        heatIndex: heatIndexC,
+        stressCategory: 'Extreme Caution',
+        irritabilityRisk: 58,
+        cognitiveFatigueRisk: 66,
+        calmProbability: 18,
+        primaryBehavior: 'Restlessness & Short Temper: Noticeable drop in patience, increased frustration under delays.',
+        physiologicalDrivers: [
+          'Elevated sympathetic nervous arousal due to continuous sweating & thermal discomfort',
+          'Dehydration-linked neurotransmitter deceleration',
+          'Circadian phase delay reducing restorative REM sleep'
+        ],
+        mitigationTip: 'Hydrate every 45 mins, reduce afternoon screen strain, and practice cooled breathwork.'
+      };
+    }
+
+    if (temp >= 28 || heatIndexC >= 30) {
+      return {
+        heatIndex: heatIndexC,
+        stressCategory: 'Caution',
+        irritabilityRisk: 34,
+        cognitiveFatigueRisk: 42,
+        calmProbability: 40,
+        primaryBehavior: 'Mild Slump & Distractibility: Moderate energy dips during peak solar hours, slight sensory overload.',
+        physiologicalDrivers: [
+          'Mild fluid loss inducing sluggish cognitive reflex',
+          'Skin blood pooling causing slight afternoon drowsing'
+        ],
+        mitigationTip: 'Drink cold water with electrolytes, take shaded 5-minute pauses.'
+      };
+    }
+
+    return {
+      heatIndex: heatIndexC,
+      stressCategory: 'Comfortable',
+      irritabilityRisk: 12,
+      cognitiveFatigueRisk: 18,
+      calmProbability: 68,
+      primaryBehavior: 'Optimal Homeostasis: Stable mood, high patience reserves, and balanced social interactions.',
+      physiologicalDrivers: [
+        'Balanced autonomic nervous system function',
+        'Neutral thermoregulatory energy expenditure'
+      ],
+      mitigationTip: 'Enjoy outdoor activities or deep focus sessions during this thermal sweet spot.'
+    };
+  }
 }

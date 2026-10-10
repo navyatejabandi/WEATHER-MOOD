@@ -163,16 +163,26 @@ export const INITIAL_SIMILAR_RECORDS: SimilarWeatherRecord[] = [
   },
 ];
 
-const STORAGE_KEY_USER = 'wm_auth_user';
-const STORAGE_KEY_FEEDBACK = 'wm_user_feedback_records';
-const STORAGE_KEY_ACCOUNTS = 'wm_registered_accounts';
-const STORAGE_KEY_ONCE_REGISTERED = 'wm_once_registered_identifiers';
+const STORAGE_KEY_USER = 'wm_clean_user';
+const STORAGE_KEY_FEEDBACK = 'wm_clean_feedback';
+const STORAGE_KEY_ACCOUNTS = 'wm_clean_accounts';
+const STORAGE_KEY_ONCE_REGISTERED = 'wm_clean_once_registered';
+
+// Automatically purge all legacy user data
+try {
+  localStorage.removeItem('wm_auth_user');
+  localStorage.removeItem('wm_registered_accounts');
+  localStorage.removeItem('wm_once_registered_identifiers');
+} catch {
+  // ignore
+}
 
 export class AppStore {
   static getStoredUser(): AuthUser | null {
     try {
       const data = localStorage.getItem(STORAGE_KEY_USER);
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      return JSON.parse(data);
     } catch {
       return null;
     }
@@ -202,8 +212,6 @@ export class AppStore {
       }
       const initial = [
         { identifier: 'demo@example.com', name: 'Demo User', password: 'password123' },
-        { identifier: 'user@example.com', name: 'Teja', password: 'password123' },
-        { identifier: 'navyateja.bandi@gmail.com', name: 'Navya Teja', password: 'password123' }
       ];
       localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(initial));
       return initial;
@@ -216,7 +224,7 @@ export class AppStore {
     try {
       const clean = identifier.trim().toLowerCase();
       const raw = localStorage.getItem(STORAGE_KEY_ONCE_REGISTERED);
-      const list: string[] = raw ? JSON.parse(raw) : ['demo@example.com', 'user@example.com', 'navyateja.bandi@gmail.com'];
+      const list: string[] = raw ? JSON.parse(raw) : ['demo@example.com'];
       if (list.includes(clean)) return true;
       const current = this.getRegisteredAccounts();
       return current.some(a => a.identifier.toLowerCase() === clean);
@@ -271,7 +279,7 @@ export class AppStore {
       localStorage.setItem(STORAGE_KEY_ACCOUNTS, JSON.stringify(list));
 
       const raw = localStorage.getItem(STORAGE_KEY_ONCE_REGISTERED);
-      const onceList: string[] = raw ? JSON.parse(raw) : ['demo@example.com', 'user@example.com', 'navyateja.bandi@gmail.com'];
+      const onceList: string[] = raw ? JSON.parse(raw) : ['demo@example.com'];
       if (!onceList.includes(clean)) {
         onceList.push(clean);
         localStorage.setItem(STORAGE_KEY_ONCE_REGISTERED, JSON.stringify(onceList));
